@@ -3,6 +3,7 @@ import { MapPin, Clock, Volume2, Sun, Armchair } from 'lucide-react';
 import type { Bench } from '@/types';
 import { MATERIAL_LABELS, SHADE_LABELS, NOISE_LABELS, STAY_DURATION_LABELS } from '@/types';
 import Rating from '@/components/Rating/Rating';
+import ReviewStatusBadge from '@/components/ReviewStatusBadge/ReviewStatusBadge';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
 
 interface BenchCardProps {
@@ -64,6 +65,7 @@ export default function BenchCard({ bench, index = 0 }: BenchCardProps) {
               有靠背
             </span>
           )}
+          <ReviewStatusBadge benchId={bench.id} />
         </div>
 
         <div className="flex items-center justify-between">

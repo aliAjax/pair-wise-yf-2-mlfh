@@ -4,6 +4,7 @@ import ListPage from '@/pages/ListPage/ListPage';
 import MapPage from '@/pages/MapPage/MapPage';
 import RankingPage from '@/pages/RankingPage/RankingPage';
 import BenchDetail from '@/pages/BenchDetail/BenchDetail';
+import ReviewPage from '@/pages/ReviewPage/ReviewPage';
 import AddEditPage from '@/pages/AddEditPage/AddEditPage';
 
 export default function App() {
@@ -17,6 +18,7 @@ export default function App() {
             <Route path="/map" element={<MapPage />} />
             <Route path="/ranking" element={<RankingPage />} />
             <Route path="/bench/:id" element={<BenchDetail />} />
+            <Route path="/bench/:id/review" element={<ReviewPage />} />
             <Route path="/add" element={<AddEditPage />} />
             <Route path="/edit/:id" element={<AddEditPage />} />
           </Routes>

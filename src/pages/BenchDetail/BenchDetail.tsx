@@ -14,6 +14,7 @@ import {
   Sunset,
   Moon,
   CloudSun,
+  ClipboardCheck,
 } from 'lucide-react';
 import { useBenchStore } from '@/store/useBenchStore';
 import {
@@ -26,12 +27,13 @@ import {
 } from '@/types';
 import type { TimePeriodType } from '@/types';
 import Rating from '@/components/Rating/Rating';
+import ReviewStatusBadge from '@/components/ReviewStatusBadge/ReviewStatusBadge';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
 
 export default function BenchDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getBenchById, deleteBench, initialize, initialized } = useBenchStore();
+  const { getBenchById, deleteBench, initialize, initialized, getDraft, getReviewRecords } = useBenchStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
@@ -61,6 +63,8 @@ export default function BenchDetail() {
   const comfortScore = calculateComfortScore(bench);
   const comfortLevel = getComfortLevel(comfortScore);
   const comfortColor = getComfortColor(comfortScore);
+  const reviewDraft = getDraft(bench.id);
+  const reviewRecords = getReviewRecords(bench.id);
 
   const timePeriodIcons: Record<TimePeriodType, typeof Sunrise> = {
     morning: Sunrise,
@@ -195,6 +199,13 @@ export default function BenchDetail() {
                 <div className="flex-1" />
 
                 <button
+                  onClick={() => navigate(`/bench/${bench.id}/review`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-ochre hover:bg-ochre/10 rounded-lg transition-colors"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  {reviewDraft ? '继续复核' : '现场复核'}
+                </button>
+                <button
                   onClick={() => navigate(`/edit/${bench.id}`)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-moss-green hover:bg-moss-green/10 rounded-lg transition-colors"
                 >
@@ -260,6 +271,56 @@ export default function BenchDetail() {
           </div>
 
           <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-3">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif text-lg font-semibold text-deep-brown">
+                复核记录
+              </h2>
+              <ReviewStatusBadge benchId={bench.id} />
+            </div>
+
+            {reviewRecords.length > 0 ? (
+              <div className="space-y-3">
+                {[...reviewRecords].reverse().map((record, index) => (
+                  <div
+                    key={record.id}
+                    className="p-3 bg-warm-cream/50 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-deep-brown">
+                        {index === 0 ? '最新核验' : `第 ${reviewRecords.length - index} 次核验`}
+                      </span>
+                      <span className="text-xs text-ink-light">
+                        {new Date(record.reviewedAt).toLocaleString('zh-CN')}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-light">
+                      <span className="flex items-center gap-1">
+                        <Sun className="w-3 h-3 text-moss-green" />
+                        {SHADE_LABELS[record.shadeLevel]}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Volume2 className="w-3 h-3 text-ochre" />
+                        {NOISE_LABELS[record.noiseLevel]}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        评分
+                        <Rating value={record.rating} readOnly size="sm" />
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                <p className="text-sm text-ink-light">待首次复核</p>
+                <p className="text-xs text-ink-light/60 mt-1">
+                  通过现场复核逐项确认遮阴、噪音和个人评分
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-4">
             <h3 className="font-serif text-sm font-semibold text-deep-brown mb-3">
               档案信息
             </h3>

@@ -4,6 +4,7 @@ import { Trophy, MapPin, Star, Crown, Medal, Award } from 'lucide-react';
 import { useBenchStore } from '@/store/useBenchStore';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
 import { MATERIAL_LABELS, SHADE_LABELS } from '@/types';
+import ReviewStatusBadge from '@/components/ReviewStatusBadge/ReviewStatusBadge';
 import type { Bench } from '@/types';
 
 export default function RankingPage() {
@@ -90,6 +91,7 @@ export default function RankingPage() {
                       <Star className="w-3 h-3 fill-ochre text-ochre" />
                       <span>{bench.rating.toFixed(1)}</span>
                     </div>
+                    <ReviewStatusBadge benchId={bench.id} />
                   </div>
                 </div>
 

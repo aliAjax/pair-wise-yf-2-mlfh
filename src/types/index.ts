@@ -28,9 +28,46 @@ export interface Bench {
   rating: number;
   review: string;
   experiences: BenchExperience[];
+  revision: number;
   createdAt: string;
   updatedAt: string;
 }
+
+export type ReviewItemKey = 'shade' | 'noise' | 'rating';
+
+export interface BenchReview {
+  id: string;
+  benchId: string;
+  shadeLevel: ShadeLevelType;
+  noiseLevel: NoiseLevelType;
+  rating: number;
+  baseRevision: number;
+  reviewedAt: string;
+}
+
+export interface ReviewDraft {
+  benchId: string;
+  baseRevision: number;
+  shadeLevel: ShadeLevelType;
+  noiseLevel: NoiseLevelType;
+  rating: number;
+  confirmed: Record<ReviewItemKey, boolean>;
+  updatedAt: string;
+}
+
+export type SubmitReviewFailureReason = 'no-draft' | 'bench-removed' | 'conflict' | 'incomplete';
+
+export interface SubmitReviewResult {
+  ok: boolean;
+  reason?: SubmitReviewFailureReason;
+  missing?: ReviewItemKey[];
+}
+
+export const REVIEW_ITEM_LABELS: Record<ReviewItemKey, string> = {
+  shade: '遮阴',
+  noise: '噪音',
+  rating: '个人评分',
+};
 
 export const MATERIAL_LABELS: Record<MaterialType, string> = {
   wood: '木质',
