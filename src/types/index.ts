@@ -13,6 +13,32 @@ export interface BenchExperience {
   rating: number;
 }
 
+export interface BenchVerification {
+  id: string;
+  benchId: string;
+  shadeLevel: ShadeLevelType;
+  noiseLevel: NoiseLevelType;
+  rating: number;
+  baseUpdatedAt: string;
+  verifiedAt: string;
+}
+
+export interface ReviewDraft {
+  benchId: string;
+  baseName: string;
+  baseUpdatedAt: string;
+  shadeLevel: ShadeLevelType;
+  noiseLevel: NoiseLevelType;
+  rating: number;
+  confirmed: {
+    shade: boolean;
+    noise: boolean;
+    rating: boolean;
+  };
+  startedAt: string;
+  updatedAt: string;
+}
+
 export interface Bench {
   id: string;
   name: string;
@@ -28,6 +54,8 @@ export interface Bench {
   rating: number;
   review: string;
   experiences: BenchExperience[];
+  verifications?: BenchVerification[];
+  lastVerifiedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

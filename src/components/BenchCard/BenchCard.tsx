@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { MapPin, Clock, Volume2, Sun, Armchair } from 'lucide-react';
+import { MapPin, Clock, Volume2, Sun, Armchair, BadgeCheck, ClipboardCheck } from 'lucide-react';
 import type { Bench } from '@/types';
 import { MATERIAL_LABELS, SHADE_LABELS, NOISE_LABELS, STAY_DURATION_LABELS } from '@/types';
 import Rating from '@/components/Rating/Rating';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
+import { isBenchVerified } from '@/utils/verification';
 
 interface BenchCardProps {
   bench: Bench;
@@ -62,6 +63,17 @@ export default function BenchCard({ bench, index = 0 }: BenchCardProps) {
           {bench.hasBackrest && (
             <span className="inline-flex items-center gap-1 px-2 py-1 bg-moss-green/10 text-moss-green text-xs rounded-md">
               有靠背
+            </span>
+          )}
+          {isBenchVerified(bench) ? (
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-moss-green/10 text-moss-green text-xs rounded-md">
+              <BadgeCheck className="w-3 h-3" />
+              已复核
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-ochre/10 text-ochre text-xs rounded-md">
+              <ClipboardCheck className="w-3 h-3" />
+              待复核
             </span>
           )}
         </div>

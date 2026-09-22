@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, MapPin, Star, Crown, Medal, Award } from 'lucide-react';
+import { Trophy, MapPin, Star, Crown, Medal, Award, BadgeCheck, ClipboardCheck } from 'lucide-react';
 import { useBenchStore } from '@/store/useBenchStore';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
+import { isBenchVerified } from '@/utils/verification';
 import { MATERIAL_LABELS, SHADE_LABELS } from '@/types';
 import type { Bench } from '@/types';
 
@@ -90,6 +91,17 @@ export default function RankingPage() {
                       <Star className="w-3 h-3 fill-ochre text-ochre" />
                       <span>{bench.rating.toFixed(1)}</span>
                     </div>
+                    {isBenchVerified(bench) ? (
+                      <span className="inline-flex items-center gap-1 text-xs text-moss-green px-2 py-0.5 bg-moss-green/10 rounded">
+                        <BadgeCheck className="w-3 h-3" />
+                        已复核
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs text-ochre px-2 py-0.5 bg-ochre/10 rounded">
+                        <ClipboardCheck className="w-3 h-3" />
+                        待复核
+                      </span>
+                    )}
                   </div>
                 </div>
 

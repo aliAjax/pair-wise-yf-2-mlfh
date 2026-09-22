@@ -14,6 +14,9 @@ import {
   Sunset,
   Moon,
   CloudSun,
+  Star,
+  ClipboardCheck,
+  BadgeCheck,
 } from 'lucide-react';
 import { useBenchStore } from '@/store/useBenchStore';
 import {
@@ -27,6 +30,7 @@ import {
 import type { TimePeriodType } from '@/types';
 import Rating from '@/components/Rating/Rating';
 import { calculateComfortScore, getComfortLevel, getComfortColor } from '@/utils/comfort';
+import { getVerifications, formatDateTime } from '@/utils/verification';
 
 export default function BenchDetail() {
   const { id } = useParams<{ id: string }>();
@@ -61,6 +65,8 @@ export default function BenchDetail() {
   const comfortScore = calculateComfortScore(bench);
   const comfortLevel = getComfortLevel(comfortScore);
   const comfortColor = getComfortColor(comfortScore);
+  const verifications = getVerifications(bench);
+  const verified = verifications.length > 0;
 
   const timePeriodIcons: Record<TimePeriodType, typeof Sunrise> = {
     morning: Sunrise,
@@ -195,6 +201,13 @@ export default function BenchDetail() {
                 <div className="flex-1" />
 
                 <button
+                  onClick={() => navigate(`/bench/${bench.id}/review`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-ochre hover:bg-ochre/10 rounded-lg transition-colors"
+                >
+                  <ClipboardCheck className="w-4 h-4" />
+                  现场复核
+                </button>
+                <button
                   onClick={() => navigate(`/edit/${bench.id}`)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-moss-green hover:bg-moss-green/10 rounded-lg transition-colors"
                 >
@@ -260,6 +273,69 @@ export default function BenchDetail() {
           </div>
 
           <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-3">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif text-lg font-semibold text-deep-brown">
+                复核记录
+              </h2>
+              {verified ? (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-moss-green/10 text-moss-green text-xs rounded-full">
+                  <BadgeCheck className="w-3 h-3" />
+                  已复核 {verifications.length} 次
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-ochre/10 text-ochre text-xs rounded-full">
+                  <ClipboardCheck className="w-3 h-3" />
+                  首次待确认
+                </span>
+              )}
+            </div>
+
+            {verified ? (
+              <div className="space-y-3">
+                {[...verifications].reverse().map((record, index) => (
+                  <div
+                    key={record.id}
+                    className="p-3 bg-warm-cream/50 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs text-ink-light">
+                        {formatDateTime(record.verifiedAt)}
+                      </span>
+                      {index === 0 && (
+                        <span className="text-xs text-moss-green font-medium">最新</span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-deep-brown">
+                      <span className="px-2 py-0.5 bg-white/60 rounded">
+                        {SHADE_LABELS[record.shadeLevel]}
+                      </span>
+                      <span className="px-2 py-0.5 bg-white/60 rounded">
+                        {NOISE_LABELS[record.noiseLevel]}
+                      </span>
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-white/60 rounded">
+                        <Star className="w-3 h-3 fill-ochre text-ochre" />
+                        {record.rating.toFixed(1)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-ink-light">
+                该档案还没有现场复核记录，按首次待确认处理。复核后遮阴、噪音与评分将以现场确认值为准。
+              </p>
+            )}
+
+            <button
+              onClick={() => navigate(`/bench/${bench.id}/review`)}
+              className="mt-4 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-moss-green text-white text-sm rounded-lg hover:bg-moss-light transition-colors"
+            >
+              <ClipboardCheck className="w-4 h-4" />
+              {verified ? '再次现场复核' : '开始现场复核'}
+            </button>
+          </div>
+
+          <div className="paper-texture rounded-xl shadow-paper p-6 fade-in opacity-0 stagger-4">
             <h3 className="font-serif text-sm font-semibold text-deep-brown mb-3">
               档案信息
             </h3>
@@ -279,6 +355,12 @@ export default function BenchDetail() {
               <div className="flex justify-between">
                 <span className="text-ink-light">时段记录</span>
                 <span className="text-deep-brown">{bench.experiences.length} 条</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ink-light">复核记录</span>
+                <span className="text-deep-brown">
+                  {verified ? `${verifications.length} 次` : '首次待确认'}
+                </span>
               </div>
             </div>
           </div>

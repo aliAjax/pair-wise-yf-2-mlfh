@@ -1,8 +1,14 @@
 import { create } from 'zustand';
-import type { Bench, BenchExperience, MaterialType, OrientationType, ShadeLevelType, NoiseLevelType, StayDurationType } from '@/types';
+import type { Bench, BenchExperience, BenchVerification, MaterialType, OrientationType, ShadeLevelType, NoiseLevelType, StayDurationType } from '@/types';
 import { loadBenches, saveBenches } from '@/utils/storage';
 import { generateId } from '@/utils/comfort';
 import { mockBenches } from '@/data/mockBenches';
+
+interface ReviewValues {
+  shadeLevel: ShadeLevelType;
+  noiseLevel: NoiseLevelType;
+  rating: number;
+}
 
 interface BenchState {
   benches: Bench[];
@@ -25,6 +31,7 @@ interface BenchActions {
   addBench: (bench: Omit<Bench, 'id' | 'createdAt' | 'updatedAt' | 'experiences'>) => void;
   updateBench: (id: string, updates: Partial<Bench>) => void;
   deleteBench: (id: string) => void;
+  applyVerification: (id: string, review: ReviewValues) => boolean;
   getBenchById: (id: string) => Bench | undefined;
   addExperience: (benchId: string, experience: Omit<BenchExperience, 'id' | 'benchId'>) => void;
   updateExperience: (benchId: string, expId: string, updates: Partial<BenchExperience>) => void;
@@ -42,16 +49,22 @@ const initialState: BenchState = {
   initialized: false,
 };
 
+// 旧数据没有复核记录时按首次待确认处理：补上空数组
+function normalizeBench(bench: Bench): Bench {
+  return { ...bench, verifications: bench.verifications ?? [] };
+}
+
 export const useBenchStore = create<BenchState & BenchActions>((set, get) => ({
   ...initialState,
 
   initialize: () => {
     const stored = loadBenches();
     if (stored.length > 0) {
-      set({ benches: stored, initialized: true });
+      set({ benches: stored.map(normalizeBench), initialized: true });
     } else {
-      set({ benches: mockBenches, initialized: true });
-      saveBenches(mockBenches);
+      const mocks = mockBenches.map(normalizeBench);
+      set({ benches: mocks, initialized: true });
+      saveBenches(mocks);
     }
   },
 
@@ -75,6 +88,7 @@ export const useBenchStore = create<BenchState & BenchActions>((set, get) => ({
       ...benchData,
       id: generateId(),
       experiences: [],
+      verifications: [],
       createdAt: now,
       updatedAt: now,
     };
@@ -97,6 +111,38 @@ export const useBenchStore = create<BenchState & BenchActions>((set, get) => ({
     const newBenches = get().benches.filter((bench) => bench.id !== id);
     set({ benches: newBenches });
     saveBenches(newBenches);
+  },
+
+  applyVerification: (id, review) => {
+    const target = get().benches.find((bench) => bench.id === id);
+    if (!target) return false;
+
+    const now = new Date().toISOString();
+    const verification: BenchVerification = {
+      id: generateId(),
+      benchId: id,
+      shadeLevel: review.shadeLevel,
+      noiseLevel: review.noiseLevel,
+      rating: review.rating,
+      baseUpdatedAt: target.updatedAt,
+      verifiedAt: now,
+    };
+    const newBenches = get().benches.map((bench) =>
+      bench.id === id
+        ? {
+            ...bench,
+            shadeLevel: review.shadeLevel,
+            noiseLevel: review.noiseLevel,
+            rating: review.rating,
+            verifications: [...(bench.verifications ?? []), verification],
+            lastVerifiedAt: now,
+            updatedAt: now,
+          }
+        : bench
+    );
+    set({ benches: newBenches });
+    saveBenches(newBenches);
+    return true;
   },
 
   getBenchById: (id) => {
